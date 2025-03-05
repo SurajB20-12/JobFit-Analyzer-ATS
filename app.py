@@ -2,13 +2,13 @@ from dotenv import load_dotenv
 load_dotenv()
 import streamlit as st
 import base64
-import os
+import os 
 import io
 from PIL import Image
 import pdf2image
 import fitz 
 import google.generativeai as genai
-
+#configure genai access Gemini API key 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
