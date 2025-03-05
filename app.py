@@ -9,7 +9,7 @@ import pdf2image
 import fitz 
 import google.generativeai as genai
 #configure genai access Gemini API key 
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+genai.configure(api_key='AIzaSyAZ25cHYmCQ5UP4L87X8u58Z7Mg0t0Q6M0')
 
 
 def get_gemini_response(input,pdf_content,prompt):
