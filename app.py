@@ -60,28 +60,21 @@ input_promp = st.text_input("Queries: Feel Free to Ask here")
 submit5 = st.button("Answer My Query")
 
 input_prompt1 = """
- You are an experienced Technical Human Resource Manager,your task is to review the provided resume against the job description. 
-  Please share your professional evaluation on whether the candidate's profile aligns with the role. 
- Highlight the strengths and weaknesses of the applicant in relation to the specified job requirements.
+You are an experienced Technical Human Resource Manager. 
+Review the resume against the job description and highlight strengths and weaknesses.
 """
 
 input_prompt2 = """
-You are an Technical Human Resource Manager with expertise in data science, 
-your role is to scrutinize the resume in light of the job description provided. 
-Share your insights on the candidate's suitability for the role from an HR perspective. 
-Additionally, offer advice on enhancing the candidate's skills and identify areas where improvement is needed.
+You are a Technical HR Manager with expertise in data science. 
+Suggest ways to enhance the candidate's skills based on the job description.
 """
 
 input_prompt3 = """
-You are an skilled ATS (Applicant Tracking System) scanner with a deep understanding of data science and ATS functionality, 
-your task is to evaluate the resume against the provided job description. As a Human Resource manager,
- assess the compatibility of the resume with the role. Give me what are the keywords that are missing
- Also, provide recommendations for enhancing the candidate's skills and identify which areas require further development.
+You are an ATS scanner. Identify missing keywords in the resume based on the job description.
 """
 input_prompt4 = """
-You are an skilled ATS (Applicant Tracking System) scanner with a deep understanding of data science and ATS functionality, 
-your task is to evaluate the resume against the provided job description. give me the percentage of match if the resume matches
-the job description. First the output should come as percentage and then keywords missing and last final thoughts.
+You are an ATS scanner. Provide a percentage match between the resume and job description, 
+followed by missing keywords and final thoughts.
 """
 
 if submit1:
