@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 import streamlit as st
+import time 
 import base64
 import io
 from PIL import Image
@@ -11,13 +12,24 @@ import google.generativeai as genai
 #configure genai access Gemini API key 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
+MAX_PDF_TEXT_LENGTH = 6000
+MAX_RETRIES = 3 
 
 def get_gemini_response(input,pdf_content,prompt):
-  model=genai.GenerativeModel('gemini-1.5-pro-latest')
-  response=model.generate_content([input,pdf_content,prompt])
-  return response.text
+    model=genai.GenerativeModel('gemini-1.5-pro-latest')
+    
+    for attempt in range(MAX_RETRIES):
+        try:
+            response=model.generate_content([input,pdf_content,prompt])
+            return response.text
+        except Exception as e:
+            st.warning(f"Attempt {attempt + 1} failed: {e}")
+            time.sleep(2 ** attempt)
 
-def input_pdf_setup(uploaded_file):
+
+
+
+def input_pdf_setup(uploaded_file,max_chars=MAX_PDF_TEXT_LENGTH):
     
     if uploaded_file is not None:
       # Read the PDF file
@@ -31,7 +43,7 @@ def input_pdf_setup(uploaded_file):
 
       # Concatenate the list into a single string with a space in between each part
       pdf_text_content = " ".join(text_parts)
-      return pdf_text_content
+      return pdf_text_content[:max_chars]
     else:
        raise FileNotFoundError("No file uploaded")
 
