@@ -12,7 +12,7 @@ import google.generativeai as genai
 #configure genai access Gemini API key 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-MAX_PDF_TEXT_LENGTH = 6000
+MAX_PDF_TEXT_LENGTH = 5000
 MAX_RETRIES = 3 
 
 def get_gemini_response(input,pdf_content,prompt):
