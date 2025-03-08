@@ -1,138 +1,108 @@
-import os 
+import os
+import time
 from dotenv import load_dotenv
-load_dotenv()
 import streamlit as st
-import time 
-import base64
-import io
-from PIL import Image
-import pdf2image
-import fitz 
+import fitz  # PyMuPDF for PDF text extraction
 import google.generativeai as genai
-#configure genai access Gemini API key 
+
+# Load environment variables
+load_dotenv()
+
+# Configure Gemini API Key
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
+# Limit the number of characters sent to the API
 MAX_PDF_TEXT_LENGTH = 5000
-MAX_RETRIES = 3 
+MAX_RETRIES = 3  # Number of retries for API requests
 
-def get_gemini_response(input,pdf_content,prompt):
-    model=genai.GenerativeModel('gemini-1.5-pro-latest')
+
+def get_gemini_response(input_text, pdf_content, prompt):
+    """Fetches a response from Gemini API with retries and timeout handling."""
+    model = genai.GenerativeModel("gemini-1.5-pro-latest")
     
     for attempt in range(MAX_RETRIES):
         try:
-            response=model.generate_content([input,pdf_content,prompt])
+            response = model.generate_content([input_text, pdf_content, prompt])
             return response.text
         except Exception as e:
             st.warning(f"Attempt {attempt + 1} failed: {e}")
-            time.sleep(2 ** attempt)
+            time.sleep(2 ** attempt)  # Exponential backoff
+
+    return "Error: Unable to get response from Gemini API after multiple attempts."
 
 
-
-
-def input_pdf_setup(uploaded_file,max_chars=MAX_PDF_TEXT_LENGTH):
-    
+def input_pdf_setup(uploaded_file, max_chars=MAX_PDF_TEXT_LENGTH):
+    """Extracts and limits text from a PDF file."""
     if uploaded_file is not None:
-      # Read the PDF file
-      document = fitz.open(stream=uploaded_file.read(), filetype="pdf")
-        # Initialize a list to hold the text of each page
-      text_parts = []
-
-        # Iterate over the pages of the PDF to extract the text
-      for page in document:
-          text_parts.append(page.get_text())
-
-      # Concatenate the list into a single string with a space in between each part
-      pdf_text_content = " ".join(text_parts)
-      return pdf_text_content[:max_chars]
+        document = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+        text_parts = [page.get_text() for page in document]
+        pdf_text_content = " ".join(text_parts)
+        
+        return pdf_text_content[:max_chars]  # Truncate if too long
     else:
-       raise FileNotFoundError("No file uploaded")
+        return None
 
-#create streamlit app
+
+# Streamlit UI setup
 st.set_page_config(page_title="Resume Expert")
 
 st.header("JobFit Analyzer")
-st.subheader('This Application helps you in your Resume Review')
+st.subheader("This Application helps you in your Resume Review")
+
 input_text = st.text_input("Job Description: ", key="input")
-uploaded_file = st.file_uploader("Upload your Resume(PDF)...", type=["pdf"])
-pdf_content = ""
+uploaded_file = st.file_uploader("Upload your Resume (PDF)", type=["pdf"])
 
 if uploaded_file is not None:
-    st.write("PDF Uploaded Successfully")
+    st.success("PDF Uploaded Successfully!")
 
-submit1 = st.button("Tell Me About the Resume")
+submit1 = st.button("Analyze Resume")
+submit2 = st.button("Improve My Skills")
+submit3 = st.button("Find Missing Keywords")
+submit4 = st.button("Check Resume Match Percentage")
+input_promp = st.text_input("Custom Query:")
+submit5 = st.button("Ask My Query")
 
-submit2 = st.button("How Can I Improvise my Skills")
+# Define prompts
+prompts = {
+    "analyze": """You are an experienced Technical Human Resource Manager. 
+                  Review the resume against the job description and highlight strengths and weaknesses.""",
+    "improve_skills": """You are a Technical HR Manager with expertise in data science. 
+                         Suggest ways to enhance the candidate's skills based on the job description.""",
+    "missing_keywords": """You are an ATS scanner. Identify missing keywords in the resume based on the job description.""",
+    "match_percentage": """You are an ATS scanner. Provide a percentage match between the resume and job description, 
+                           followed by missing keywords and final thoughts."""
+}
 
-submit3 = st.button("What are the Keywords That are Missing")
+if uploaded_file is not None:
+    pdf_content = input_pdf_setup(uploaded_file)
 
-submit4 = st.button("Percentage match")
-
-input_promp = st.text_input("Queries: Feel Free to Ask here")
-
-submit5 = st.button("Answer My Query")
-
-input_prompt1 = """
-You are an experienced Technical Human Resource Manager. 
-Review the resume against the job description and highlight strengths and weaknesses.
-"""
-
-input_prompt2 = """
-You are a Technical HR Manager with expertise in data science. 
-Suggest ways to enhance the candidate's skills based on the job description.
-"""
-
-input_prompt3 = """
-You are an ATS scanner. Identify missing keywords in the resume based on the job description.
-"""
-input_prompt4 = """
-You are an ATS scanner. Provide a percentage match between the resume and job description, 
-followed by missing keywords and final thoughts.
-"""
-
-if submit1:
-    if uploaded_file is not None:
-        pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_prompt1, pdf_content, input_text)
-        st.subheader("The Response is")
+    if submit1:
+        response = get_gemini_response(input_text, pdf_content, prompts["analyze"])
+        st.subheader("Analysis Report")
         st.write(response)
-    else:
-        st.write("Please upload a PDF file to proceed.")
 
-elif submit2:
-    if uploaded_file is not None:
-        pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_prompt2, pdf_content, input_text)
-        st.subheader("The Response is")
+    elif submit2:
+        response = get_gemini_response(input_text, pdf_content, prompts["improve_skills"])
+        st.subheader("Skill Improvement Suggestions")
         st.write(response)
-    else:
-        st.write("Please upload a PDF file to proceed.")
 
-elif submit3:
-    if uploaded_file is not None:
-        pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_prompt3, pdf_content, input_text)
-        st.subheader("The Response is")
+    elif submit3:
+        response = get_gemini_response(input_text, pdf_content, prompts["missing_keywords"])
+        st.subheader("Missing Keywords")
         st.write(response)
-    else:
-        st.write("Please upload a PDF file to proceed.")
 
-elif submit4:
-    if uploaded_file is not None:
-        pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_prompt4, pdf_content, input_text)
-        st.subheader("The Response is")
+    elif submit4:
+        response = get_gemini_response(input_text, pdf_content, prompts["match_percentage"])
+        st.subheader("Resume Match Percentage")
         st.write(response)
-    else:
-        st.write("Please upload a PDF file to proceed.")
 
-elif submit5:
-    if uploaded_file is not None:
-        pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_promp, pdf_content, input_text)
-        st.subheader("The Response is")
+    elif submit5 and input_promp.strip():
+        response = get_gemini_response(input_text, pdf_content, input_promp)
+        st.subheader("Custom Query Response")
         st.write(response)
-    else:
-        st.write("Please upload a PDF file to proceed.")
+    elif submit5:
+        st.warning("Please enter a query before submitting.")
 
-
+else:
+    st.warning("Please upload a PDF file to proceed.")
 
