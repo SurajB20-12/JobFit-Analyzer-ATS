@@ -2,4 +2,4 @@
 
 ## This Application helps you in your Resume Review
 
-## Application link: https://jobfit-analyzer-ats.onrender.com
+## Application link: https://suraj1220-jobfitanalyzer.hf.space/
