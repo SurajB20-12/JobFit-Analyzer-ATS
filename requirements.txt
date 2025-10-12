@@ -6,6 +6,7 @@ pymupdf
 gunicorn
 protobuf
 langchain
+langchain-groq
 groq
 python-dotenv
 pymupdf
