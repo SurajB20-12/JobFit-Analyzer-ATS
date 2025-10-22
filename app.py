@@ -5,7 +5,7 @@ import streamlit as st
 import fitz  # PyMuPDF for PDF text extraction
 
 from langchain_groq import ChatGroq
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 # Load environment variables
 load_dotenv()
 
